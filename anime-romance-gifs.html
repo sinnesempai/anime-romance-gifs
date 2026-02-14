@@ -1,0 +1,170 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Romantic Anime GIF Scroll</title>
+<style>
+  body {
+    margin: 0;
+    background: #030303;
+    color: #fff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  header {
+    background: rgba(0,0,0,0.85);
+    padding: 14px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .btn {
+    padding: 6px 12px;
+    margin: 0 5px;
+    border-radius: 6px;
+    border: 1px solid #777;
+    background: #111;
+    color: #eee;
+    font-size: 14px;
+  }
+  .btn.active {
+    border-color: #f77;
+    color: #ff9;
+  }
+  .hint {
+    font-size: 12px;
+    opacity: 0.7;
+  }
+  .container {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  img {
+    width: 100%;
+    max-width: 440px;
+    border-radius: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  Romantic Anime GIFs ðŸ’–
+  <div style="margin-top:6px;">
+    <button id="giphyBtn" class="btn active">GIPHY</button>
+    <button id="tenorBtn" class="btn">TENOR</button>
+  </div>
+  <div class="hint">Tap anywhere to pause / resume</div>
+</header>
+
+<div class="container" id="gifContainer"></div>
+
+<script>
+const GIPHY_API_KEY = "YOUR_GIPHY_API_KEY";
+const TENOR_API_KEY = "YOUR_TENOR_API_KEY";
+
+const TAGS = [
+  "anime blush kiss",
+  "anime forehead kiss",
+  "anime shy kiss",
+  "anime romance kiss",
+  "anime sweet kiss"
+];
+
+let offsetGiphy = 0;
+let offsetTenor = "";
+let loading = false;
+let autoScroll = true;
+
+// Which source â€” "giphy" or "tenor"
+let source = "giphy";
+
+// Buttons
+const giphyBtn = document.getElementById("giphyBtn");
+const tenorBtn = document.getElementById("tenorBtn");
+
+giphyBtn.addEventListener("click", () => switchSource("giphy"));
+tenorBtn.addEventListener("click", () => switchSource("tenor"));
+
+function switchSource(s) {
+  source = s;
+  giphyBtn.classList.toggle("active", s === "giphy");
+  tenorBtn.classList.toggle("active", s === "tenor");
+  offsetGiphy = 0;
+  offsetTenor = "";
+  document.getElementById("gifContainer").innerHTML = "";
+  loadGifs();
+}
+
+function randomTag() {
+  return TAGS[Math.floor(Math.random() * TAGS.length)];
+}
+
+// Load GIFs
+async function loadGifs() {
+  if (loading) return;
+  loading = true;
+
+  if (source === "giphy") {
+    const q = encodeURIComponent(randomTag());
+    const url = `https://api.giphy.com/v1/gifs/search?api_key=${jHFRPlVJj1kUjM9oAuoH1TgIiMokIdBa}&q=${q}&limit=6&offset=${offsetGiphy}&rating=pg-13`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    data.data.forEach(gif => {
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.src = gif.images.fixed_width.url;
+      document.getElementById("gifContainer").appendChild(img);
+    });
+
+    offsetGiphy += 6;
+  } else {
+    const q = encodeURIComponent(randomTag());
+    const url = `https://api.tenor.com/v1/search?q=${q}&key=${TENOR_API_KEY}&limit=6&pos=${offsetTenor}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    data.results.forEach(r => {
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.src = r.media[0].tinygif.url;
+      document.getElementById("gifContainer").appendChild(img);
+    });
+
+    offsetTenor = data.next;
+  }
+
+  loading = false;
+}
+
+// Infinite scroll
+window.addEventListener("scroll", () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 180) {
+    loadGifs();
+  }
+});
+
+// Gentle auto-scroll
+setInterval(() => {
+  if (autoScroll) window.scrollBy({ top: 0.6, behavior: "smooth" });
+}, 40);
+
+// Tap anywhere to pause / resume
+document.addEventListener("click", () => {
+  autoScroll = !autoScroll;
+});
+
+// Initial load
+loadGifs();
+</script>
+
+</body>
+</html>
